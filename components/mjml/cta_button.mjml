@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body background-color="#F5F5F5">
+    <mj-section background-color="#FFFFFF" padding="24px 40px 32px 40px">
+      <mj-column>
+        <mj-button background-color="#A259FF" color="#FFFFFF" border-radius="6px"
+                   font-family="Arial, Helvetica, sans-serif" font-size="16px"
+                   font-weight="bold" align="left" href="{{ url }}">{{ label }}</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

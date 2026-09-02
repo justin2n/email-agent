@@ -1,0 +1,142 @@
+# The closed vocabulary. The model may only return ids that appear here.
+# An id not in this file is an escalation, never an improvisation.
+#
+# Adding a component = a PR touching this file + a partial + an eval fixture.
+# No Python changes required.
+
+version: "2.1.0"
+
+components:
+
+  hero_headline:
+    purpose: Opening headline block, text only. Default opener.
+    slots: [headline, subhead]
+    limits: { headline: 60, subhead: 120 }
+    required: [headline]
+
+  hero_with_image:
+    purpose: Opening block with a supporting image. Use when the brief supplies an asset.
+    slots: [headline, subhead, image_url, image_alt]
+    limits: { headline: 60, subhead: 120, image_alt: 120 }
+    required: [headline, image_url, image_alt]
+
+  body_text:
+    purpose: A paragraph of body copy. Repeatable up to 3 times.
+    slots: [body]
+    limits: { body: 400 }
+    required: [body]
+    repeatable: 3
+
+  feature_grid_2up:
+    purpose: Two side-by-side features. Use for comparisons or paired benefits.
+    slots: [item_1_title, item_1_body, item_2_title, item_2_body]
+    limits: { item_1_title: 40, item_1_body: 140, item_2_title: 40, item_2_body: 140 }
+    required: [item_1_title, item_1_body, item_2_title, item_2_body]
+
+  feature_grid_3up:
+    purpose: Three features in a row. Use for launch emails with multiple capabilities.
+    slots: [item_1_title, item_1_body, item_2_title, item_2_body, item_3_title, item_3_body]
+    limits: { item_1_title: 32, item_1_body: 110, item_2_title: 32, item_2_body: 110, item_3_title: 32, item_3_body: 110 }
+    required: [item_1_title, item_1_body, item_2_title, item_2_body, item_3_title, item_3_body]
+
+  cta_button:
+    purpose: Primary action. Exactly one per email.
+    slots: [label, url]
+    limits: { label: 32 }
+    required: [label, url]
+
+  cta_secondary_link:
+    purpose: Secondary action as an inline link. Optional, never primary.
+    slots: [label, url]
+    limits: { label: 40 }
+    required: [label, url]
+
+  event_details:
+    purpose: Date, time, duration and location block for webinars and events.
+    slots: [event_name, event_date, event_time, event_duration, event_location]
+    limits: { event_name: 80, event_location: 80 }
+    required: [event_name, event_date, event_time]
+
+  quote_testimonial:
+    purpose: Customer quote with attribution. Requires an approved quote in the brief.
+    slots: [quote, attribution_name, attribution_role]
+    limits: { quote: 220, attribution_name: 60, attribution_role: 80 }
+    required: [quote, attribution_name]
+
+  resource_card:
+    purpose: A linked asset — guide, template, report.
+    slots: [resource_title, resource_body, resource_url, resource_label]
+    limits: { resource_title: 60, resource_body: 160, resource_label: 32 }
+    required: [resource_title, resource_url, resource_label]
+
+  divider:
+    purpose: Visual separator. No content.
+    slots: []
+    required: []
+
+  footer_standard:
+    purpose: Legal footer, address and unsubscribe. Mandatory on every email.
+    slots: []
+    required: []
+    mandatory: true
+
+# Deterministic component sequences by campaign type.
+# These cover the common cases so the model is never consulted for them.
+# A campaign type absent from this map falls through to model selection.
+sequences:
+
+  product_launch:
+    - hero_headline
+    - body_text
+    - feature_grid_3up
+    - cta_button
+    - footer_standard
+
+  feature_announcement:
+    - hero_headline
+    - body_text
+    - feature_grid_2up
+    - cta_button
+    - footer_standard
+
+  webinar_invite:
+    - hero_headline
+    - body_text
+    - event_details
+    - cta_button
+    - footer_standard
+
+  webinar_reminder:
+    - hero_headline
+    - event_details
+    - cta_button
+    - footer_standard
+
+  nurture_education:
+    - hero_headline
+    - body_text
+    - resource_card
+    - cta_button
+    - footer_standard
+
+  customer_story:
+    - hero_headline
+    - body_text
+    - quote_testimonial
+    - cta_button
+    - footer_standard
+
+  event_followup:
+    - hero_headline
+    - body_text
+    - resource_card
+    - cta_secondary_link
+    - footer_standard
+
+  newsletter:
+    - hero_headline
+    - body_text
+    - divider
+    - feature_grid_2up
+    - cta_button
+    - footer_standard

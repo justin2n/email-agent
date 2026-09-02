@@ -1,0 +1,97 @@
+# Deterministic brand rules. Edited by marketers, enforced by code.
+# Every rule here is checked with certainty — no model involved.
+# Changing this file requires a PR and a passing eval run.
+
+version: "1.4.0"
+
+subject_line:
+  min_chars: 15
+  max_chars: 60
+  # Sentence case is house style. Title Case and ALL CAPS both fail.
+  forbid_all_caps: true
+  max_exclamations: 0
+  forbid_leading_emoji: true
+
+preheader:
+  required: true
+  min_chars: 40
+  max_chars: 100
+  # A preheader that just repeats the subject wastes inbox real estate.
+  forbid_duplicate_of_subject: true
+
+calls_to_action:
+  min_count: 1
+  max_count: 2
+  # One primary action per email. A second CTA must be a secondary link.
+  max_primary_buttons: 1
+  min_label_chars: 8
+  max_label_chars: 32
+  forbid_labels:
+    - "Click here"
+    - "Learn more"     # too vague for house style; name the destination
+    - "Submit"
+    - "Read more"
+
+links:
+  require_https: true
+  require_utm:
+    - utm_source
+    - utm_medium
+    - utm_campaign
+  forbid_bare_domains: true
+
+images:
+  require_alt_text: true
+  max_count: 4
+  min_alt_chars: 8
+
+structure:
+  require_footer: true
+  require_unsubscribe: true
+  max_word_count: 320
+  min_word_count: 60
+
+# Terms that never ship. Case-insensitive, whole-word match.
+banned_terms:
+  - revolutionary
+  - game-changing
+  - game changing
+  - best-in-class
+  - cutting-edge
+  - bleeding-edge
+  - synergy
+  - synergies
+  - paradigm shift
+  - disrupt
+  - disruptive
+  - unlock the power
+  - supercharge
+  - seamlessly
+  - effortlessly
+  - world-class
+  - industry-leading
+
+# Placeholder / leakage detection. Presence of any of these is a hard block.
+placeholder_patterns:
+  - "lorem"
+  - "ipsum"
+  - "TODO"
+  - "TBD"
+  - "XXX"
+  - "[insert"
+  - "{{"
+  - "}}"
+  - "FIXME"
+  - "<placeholder"
+
+# Claims that require legal review regardless of context.
+review_required_terms:
+  - guarantee
+  - guaranteed
+  - free forever
+  - unlimited
+  - "100%"
+  - fastest
+  - cheapest
+  - "#1"
+  - number one

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+traces/*.json
+out/
+email_agent.db
+node_modules/

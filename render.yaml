@@ -1,0 +1,20 @@
+# Render blueprint. Push this repo to GitHub, then in Render:
+#   New > Blueprint > pick the repo. That's the whole setup.
+services:
+  - type: web
+    name: email-agent
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m src.webapp
+    envVars:
+      # Deliberately left on the offline stub.
+      #
+      # This URL has no authentication - anyone who has it can run the
+      # pipeline. On the stub that costs nothing. Pointed at a real API key
+      # it would be an open invitation to spend your money, so the live
+      # backend stays local-only unless you add auth first.
+      - key: LLM_BACKEND
+        value: stub
+      - key: PYTHON_VERSION
+        value: "3.12"

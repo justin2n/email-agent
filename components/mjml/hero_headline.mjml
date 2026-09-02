@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body background-color="#F5F5F5">
+    <mj-section background-color="#FFFFFF" padding="40px 40px 8px 40px">
+      <mj-column>
+        <mj-text font-family="Arial, Helvetica, sans-serif" font-size="28px"
+                 line-height="34px" font-weight="bold" color="#1E1E1E">{{ headline }}</mj-text>
+        <mj-text font-family="Arial, Helvetica, sans-serif" font-size="16px"
+                 line-height="24px" color="#767676" padding-top="12px">{{ subhead }}</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,9 @@
+{
+  "score": 1.0,
+  "families": {
+    "golden": 1.0,
+    "messy": 1.0,
+    "hallucination": 1.0,
+    "adversarial": 1.0
+  }
+}

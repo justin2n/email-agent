@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Email Agent</title>
+<style>
+  :root{--ink:#1E1E1E;--gray:#767676;--mid:#B3B3B3;--line:#E8E8E8;--bg:#FAFAFA;
+        --purple:#A259FF;--blue:#1ABCFE;--green:#0ACF83;--red:#F24E1E;--orange:#FF7262}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:20px 30px 0}
+  .top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .dots{display:flex;gap:5px}.dots i{width:10px;height:10px;border-radius:50%}
+  h1{margin:0;font-size:17px;letter-spacing:-.2px}
+  .bk{margin-left:auto;font-size:12px;color:var(--gray);background:var(--bg);
+      border:1px solid var(--line);border-radius:99px;padding:4px 11px}
+  .bk b{color:var(--ink)}
+  nav{display:flex;gap:4px}
+  nav button{background:none;border:0;border-bottom:2px solid transparent;padding:11px 15px;
+             font-size:14px;color:var(--gray);cursor:pointer;font-weight:600}
+  nav button.on{color:var(--ink);border-color:var(--purple)}
+  nav button .n{background:var(--purple);color:#fff;border-radius:99px;
+                font-size:11px;padding:1px 7px;margin-left:6px}
+  main{padding:24px 30px 60px;max-width:1400px}
+  .grid{display:grid;grid-template-columns:minmax(360px,1fr) minmax(400px,1.1fr);gap:20px;align-items:start}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+  label{display:block;font-size:11px;font-weight:700;letter-spacing:.9px;
+        text-transform:uppercase;color:var(--gray);margin-bottom:9px}
+  textarea{width:100%;min-height:150px;padding:12px;border:1px solid var(--line);border-radius:8px;
+           font:13.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;color:var(--ink)}
+  input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+  textarea:focus,input:focus{outline:2px solid var(--purple);outline-offset:-1px;border-color:transparent}
+  .ex{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0 14px}
+  .ex button{background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 13px;
+             font-size:12.5px;color:var(--gray);cursor:pointer}
+  .ex button:hover{border-color:var(--purple);color:var(--purple)}
+  .btn{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:11px 20px;
+       font-size:14px;font-weight:700;cursor:pointer}
+  .btn:hover{background:#000}.btn:disabled{opacity:.4;cursor:default}
+  .btn.g{background:var(--green)}.btn.o{background:var(--orange)}.btn.r{background:var(--red)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;
+         font-weight:700;font-size:13.5px;color:#fff}
+  .badge i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.9)}
+  .meta{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:13px;
+        border-top:1px solid var(--line);font-size:13px}
+  .meta span{display:block;color:var(--mid);font-size:10.5px;text-transform:uppercase;
+             letter-spacing:.7px;margin-bottom:2px}
+  h3{font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;
+     color:var(--gray);margin:20px 0 9px}
+  .q{background:#EFF9FF;border-left:3px solid var(--blue);padding:10px 13px;
+     border-radius:0 6px 6px 0;margin-bottom:7px;font-size:14px}
+  .r{border-left:3px solid var(--mid);padding:9px 13px;margin-bottom:7px;
+     border-radius:0 6px 6px 0;background:#FAFAFA;font-size:13.5px}
+  .r.block{border-color:var(--red);background:#FFF3F0}
+  .r.flag_for_review{border-color:var(--orange);background:#FFF7F4}
+  .r.back_to_requester{border-color:var(--blue);background:#F2FAFF}
+  .r b{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:600;
+       color:var(--gray);display:block;margin-bottom:2px}
+  .r em{font-style:normal;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;
+        color:var(--red);display:block;margin-top:3px}
+  .chain{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--gray)}
+  .tag{border-radius:5px;padding:2px 7px;font-size:10.5px;font-weight:700;margin-left:6px}
+  .tag.rule{background:#E3FBF0;color:#068A57}.tag.model{background:#F1E6FF;color:#7B3FD1}
+  iframe{width:100%;height:520px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .empty{color:var(--mid);text-align:center;padding:60px 20px;font-size:14px}
+  .subj{background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:14px}
+  .subj span{display:block;color:var(--mid);font-size:10.5px;text-transform:uppercase;
+             letter-spacing:.7px;margin-bottom:2px}
+  .subj p{margin:0 0 8px}.subj p:last-child{margin:0;color:var(--gray);font-size:13px}
+  .thread{border-left:2px solid var(--line);padding-left:16px;margin-bottom:16px}
+  .msg{margin-bottom:14px}
+  .msg .who{font-weight:700;font-size:13.5px;margin-bottom:3px}
+  .msg .who small{font-weight:400;color:var(--mid);margin-left:7px;font-size:11.5px}
+  .msg .body{font-size:14px;white-space:pre-wrap}
+  .msg.bot .who{color:var(--purple)}
+  .qi{display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:13px 0;border-bottom:1px solid var(--line)}
+  .qi:last-child{border:0}
+  .qi .s{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+         padding:3px 9px;border-radius:99px}
+  .s.awaiting_qa{background:#FFF3E9;color:#C25B00}
+  .s.accepted{background:#E3FBF0;color:#068A57}
+  .s.edited{background:#EFF9FF;color:#0B79A8}
+  .s.rejected{background:#FFF0ED;color:#C0341A}
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+  .kpi div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}
+  .kpi b{display:block;font-size:29px;line-height:1.15;margin-bottom:3px}
+  .kpi span{color:var(--gray);font-size:12.5px}
+  pre{background:#1E1E1E;color:#E8E8E8;padding:15px;border-radius:8px;overflow:auto;
+      font-size:11.5px;line-height:1.6;max-height:340px}
+  .hint{color:var(--gray);font-size:13px;margin:6px 0 0}
+  .fq{margin-bottom:12px}
+  .fq label{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;
+            color:var(--ink);margin-bottom:6px}
+  .fq label b{color:var(--purple);margin-right:6px}
+</style></head><body>
+
+<header>
+  <div class="top">
+    <div class="dots"><i style="background:#F24E1E"></i><i style="background:#FF7262"></i>
+      <i style="background:#A259FF"></i><i style="background:#1ABCFE"></i>
+      <i style="background:#0ACF83"></i></div>
+    <h1>Email Agent</h1>
+    <div class="bk">copy engine: <b id="bk"></b></div>
+  </div>
+  <nav>
+    <button data-v="request" class="on">Request</button>
+    <button data-v="queue">Email team<span class="n" id="qn">0</span></button>
+    <button data-v="sync">Customer.io</button>
+    <button data-v="metrics">Metrics</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ REQUEST ============ -->
+  <section id="v-request">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <label>New request</label>
+          <div class="ex" id="ex"></div>
+          <textarea id="req" placeholder="Write it the way a marketer actually would."></textarea>
+          <div class="row" style="margin-top:12px">
+            <button class="btn" id="send">Send request</button>
+            <button class="btn ghost" id="reset">Reset demo</button>
+          </div>
+        </div>
+        <div class="card" id="convo" style="display:none">
+          <label>Thread</label>
+          <div class="thread" id="thread"></div>
+          <div id="replybox" style="display:none">
+            <div id="fields"></div>
+            <div class="row" style="margin-top:10px">
+              <button class="btn" id="send-reply">Reply</button>
+              <span class="hint" id="reply-hint"></span>
+            </div>
+          </div>
+          <div id="approvebox" style="display:none">
+            <div class="row">
+              <button class="btn g" id="approve">Looks good</button>
+              <button class="btn ghost" id="changes">Request changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="detail" class="card"><div class="empty">Send a request to begin.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ QUEUE ============ -->
+  <section id="v-queue" style="display:none">
+    <div class="grid">
+      <div class="card">
+        <label>Awaiting QA</label>
+        <p class="hint">Approved by the requester. The email team decides what ships.</p>
+        <div id="queue" style="margin-top:12px"></div>
+      </div>
+      <div class="card" id="qdetail"><div class="empty">Select an item.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ SYNC ============ -->
+  <section id="v-sync" style="display:none">
+    <div class="card">
+      <label>Customer.io drafts</label>
+      <p class="hint">Reviewed emails push as <b>drafts</b>. There is no send call anywhere
+        in this code path &mdash; that is structural, not a policy anyone has to remember.</p>
+      <div id="sync" style="margin-top:14px"></div>
+    </div>
+    <div class="card" id="syncdetail" style="display:none">
+      <label>Payload sent</label><pre id="payload"></pre>
+    </div>
+  </section>
+
+  <!-- ============ METRICS ============ -->
+  <section id="v-metrics" style="display:none">
+    <div class="kpi" id="kpi"></div>
+    <div class="card" style="margin-top:16px">
+      <label>Raw</label><pre id="rawmetrics"></pre>
+    </div>
+  </section>
+</main>
+
+<script>
+const EX = __EXAMPLES__, BACKEND = __BACKEND__;
+let TS = null, LAST = null, SEL = null;
+const $ = id => document.getElementById(id);
+const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const api = async (p, b) => (await fetch(p, b ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)} : {})).json();
+
+$('bk').textContent = BACKEND === 'anthropic' ? 'Claude (live)' : 'offline stub';
+
+EX.forEach(([n,b])=>{const el=document.createElement('button');el.textContent=n;
+  el.onclick=()=>{$('req').value=b};$('ex').appendChild(el)});
+
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  ['request','queue','sync','metrics'].forEach(v=>$('v-'+v).style.display = v===b.dataset.v?'':'none');
+  if(b.dataset.v==='queue') loadQueue();
+  if(b.dataset.v==='sync') loadSync();
+  if(b.dataset.v==='metrics') loadMetrics();
+});
+
+/* ---------- thread ---------- */
+let MSGS = [];
+function addMsg(who, body, bot){ MSGS.push({who,body,bot}); drawThread(); }
+function drawThread(){
+  $('convo').style.display='';
+  $('thread').innerHTML = MSGS.map(m=>`<div class="msg ${m.bot?'bot':''}">
+    <div class="who">${esc(m.who)}${m.bot?'<small>APP</small>':''}</div>
+    <div class="body">${esc(m.body)}</div></div>`).join('');
+}
+
+$('send').onclick = async () => {
+  const request = $('req').value.trim(); if(!request) return;
+  MSGS = []; $('send').disabled = true; $('send').textContent = 'Working...';
+  addMsg('Priya Raman', request.replace('__HALLUCINATION__',''), false);
+  const d = await api('/api/thread/new', {request});
+  $('send').disabled = false; $('send').textContent = 'Send request';
+  handle(d);
+};
+
+/* The agent asks N questions. Render N labelled fields rather than one line
+   with "same order" instructions - a single <input> can't hold a newline, and
+   asking someone to remember an order is a bug waiting to happen. */
+let MODE = 'answers';   // 'answers' | 'points' | 'changes'
+
+function drawFields(questions, mode){
+  MODE = mode;
+  const box = $('fields');
+  if(mode === 'points'){
+    box.innerHTML = `<div class="fq"><label>${esc(questions[0]||'Add the detail')}</label>
+      <textarea id="f0" style="min-height:96px" placeholder="One per line"></textarea></div>`;
+    $('reply-hint').textContent = 'One per line.';
+  } else if(mode === 'changes'){
+    box.innerHTML = `<div class="fq"><label>What should change?</label>
+      <textarea id="f0" style="min-height:80px" placeholder="e.g. Lead on the free tier"></textarea></div>`;
+    $('reply-hint').textContent = 'This regenerates the email.';
+  } else {
+    box.innerHTML = questions.map((q,i)=>`<div class="fq">
+      <label><b>${i+1}</b>${esc(q)}</label>
+      <input type="text" id="f${i}" autocomplete="off"></div>`).join('');
+    $('reply-hint').textContent = '';
+  }
+  const first = box.querySelector('input,textarea'); if(first) first.focus();
+}
+
+function readFields(){
+  const nodes = $('fields').querySelectorAll('input,textarea');
+  return Array.from(nodes).map(n=>n.value.trim()).filter(Boolean).join('\n');
+}
+
+$('send-reply').onclick = async () => {
+  const text = readFields();
+  if(!text){ $('reply-hint').textContent = 'Fill in at least one field.'; return; }
+  addMsg('Priya Raman', text, false);
+  $('send-reply').disabled = true; $('send-reply').textContent = 'Working...';
+  const path = MODE === 'changes' ? '/api/thread/change' : '/api/thread/reply';
+  const body = MODE === 'changes'
+    ? {thread_ts:TS, text}
+    : {thread_ts:TS, text, append: MODE === 'points'};
+  const d = await api(path, body);
+  $('send-reply').disabled = false; $('send-reply').textContent = 'Reply';
+  handle(d);
+};
+
+$('changes').onclick = () => {
+  $('replybox').style.display = '';
+  $('approvebox').style.display = 'none';
+  drawFields([], 'changes');
+  $('send-reply').textContent = 'Send change';
+};
+
+$('approve').onclick = async () => {
+  addMsg('Priya Raman','[ Looks good ]', false);
+  const d = await api('/api/thread/approve', {thread_ts:TS});
+  addMsg('Email Agent','Approved. Sent to the email team for final QA.', true);
+  $('approvebox').style.display='none'; $('replybox').style.display='none';
+  loadQueue();
+};
+
+$('reset').onclick = async () => {
+  await api('/api/reset', {}); MSGS=[]; TS=null; LAST=null;
+  $('convo').style.display='none'; $('detail').innerHTML='<div class="empty">Send a request to begin.</div>';
+  $('qn').textContent='0';
+};
+
+function handle(d){
+  if(d.error){ $('detail').innerHTML=`<div class="empty">${esc(d.error)}</div>`; return; }
+  TS = d.thread_ts; LAST = d;
+  const blocks = (d.blocks && d.blocks.blocks) || [];
+  const text = blocks.filter(b=>b.type==='section')
+    .map(b=>b.text.text.replace(/\*/g,'').replace(/_/g,'')).join('\n');
+  addMsg('Email Agent', text, true);
+
+  const asking = d.status === 'awaiting_answers';
+  $('replybox').style.display = asking ? '' : 'none';
+  $('approvebox').style.display = d.status === 'previewing' ? '' : 'none';
+  if(asking){
+    // A single question about "three points" wants free text appended to the
+    // brief; a set of schema questions wants one field each.
+    const points = d.questions.length === 1 &&
+                   /three short points|three things|one per line/i.test(d.questions[0]);
+    drawFields(d.questions, points ? 'points' : 'answers');
+    $('send-reply').textContent = 'Reply';
+  }
+  drawDetail(d);
+}
+
+function drawDetail(d){
+  const r = d.result; if(!r){ return; }
+  let h = `<div class="badge" style="background:${r.color}"><i></i>${esc(r.label)}</div>`;
+  h += '<div class="meta">';
+  if(r.campaign_type) h+=`<div><span>Type</span>${esc(r.campaign_type)}</div>`;
+  if(r.audience) h+=`<div><span>Audience</span>${esc(r.audience)}</div>`;
+  h+=`<div><span>Time</span>${r.duration_ms}ms</div><div><span>Run</span>${esc(r.run_id)}</div></div>`;
+
+  if(r.components && r.components.length){
+    const t = r.path==='rule' ? '<span class="tag rule">rules</span>' : '<span class="tag model">model fallback</span>';
+    h+=`<h3>Layout ${t}</h3><div class="chain">${r.components.map(esc).join(' &rsaquo; ')}</div>`;
+  }
+  if(d.questions && d.questions.length)
+    h+='<h3>It asked</h3>'+d.questions.map(q=>`<div class="q">${esc(q)}</div>`).join('');
+  if(r.subject)
+    h+=`<h3>Subject &amp; preheader</h3><div class="subj"><span>Subject</span><p>${esc(r.subject)}</p>
+        <span>Preheader</span><p>${esc(r.preheader)}</p></div>`;
+  if(r.reasons && r.reasons.length)
+    h+='<h3>Why</h3>'+r.reasons.map(x=>`<div class="r ${esc(x.route)}"><b>${esc(x.rule)}</b>${esc(x.message)}
+        ${x.evidence?'<em>'+esc(x.evidence)+'</em>':''}</div>`).join('');
+  if(r.has_html) h+=`<h3>The email</h3><iframe src="/preview/${esc(r.run_id)}"></iframe>`;
+  $('detail').innerHTML = h;
+}
+
+/* ---------- queue ---------- */
+async function loadQueue(){
+  const d = await api('/api/queue'); const items = d.items||[];
+  $('qn').textContent = items.filter(i=>i.status==='awaiting_qa').length;
+  $('queue').innerHTML = items.length ? items.map(i=>`
+    <div class="qi"><div>
+      <div style="font-weight:600">${esc(i.subject)}</div>
+      <div style="color:var(--gray);font-size:12.5px">${esc(i.requester)} &middot;
+        ${esc(i.campaign_type||'?')} &middot; ${i.iterations} iteration(s)
+        ${i.flags && i.flags.length ? ' &middot; '+i.flags.length+' flag(s)' : ''}</div>
+    </div>
+    <div class="row"><span class="s ${esc(i.status)}">${esc(i.status.replace('_',' '))}</span>
+      <button class="btn ghost" onclick="openItem('${esc(i.run_id)}')">Open</button></div></div>`).join('')
+    : '<div class="empty">Nothing waiting. Approve a request first.</div>';
+}
+
+async function openItem(id){
+  const d = await api('/api/queue'); SEL = (d.items||[]).find(i=>i.run_id===id); if(!SEL) return;
+  let h = `<label>${esc(SEL.subject)}</label>
+    <div class="meta"><div><span>From</span>${esc(SEL.requester)}</div>
+    <div><span>Rounds</span>${SEL.iterations}</div>
+    <div><span>Status</span>${esc(SEL.status.replace('_',' '))}</div></div>`;
+  if(SEL.flags && SEL.flags.length)
+    h += '<h3>Flagged for you</h3>'+SEL.flags.map(f=>`<div class="r flag_for_review">
+          <b>${esc(f.rule)}</b>${esc(f.message)}${f.evidence?'<em>'+esc(f.evidence)+'</em>':''}</div>`).join('');
+  else h += '<h3>Flagged for you</h3><p class="hint">Nothing. Clean run.</p>';
+  h += `<h3>The email</h3><iframe src="/preview/${esc(id)}"></iframe>
+    <h3>Decision</h3><div class="row">
+      <button class="btn g" onclick="review('${esc(id)}','accepted')">Accept as-is</button>
+      <button class="btn o" onclick="review('${esc(id)}','edited')">Accept with edits</button>
+      <button class="btn r" onclick="review('${esc(id)}','rejected')">Reject</button></div>
+    <p class="hint">Every edit is recorded as a labelled example of where the agent
+      was wrong &mdash; that becomes the eval data.</p>`;
+  $('qdetail').innerHTML = h;
+}
+
+async function review(id, outcome){
+  await api('/api/review', {run_id:id, outcome, note: outcome==='edited'?'tightened copy':''});
+  await loadQueue(); openItem(id);
+}
+
+/* ---------- sync ---------- */
+async function loadSync(){
+  const d = await api('/api/queue');
+  const ready = (d.items||[]).filter(i=>['accepted','edited'].includes(i.status));
+  $('sync').innerHTML = ready.length ? ready.map(i=>`
+    <div class="qi"><div><div style="font-weight:600">${esc(i.subject)}</div>
+      <div style="color:var(--gray);font-size:12.5px">
+        ${i.synced ? 'draft '+esc(i.synced) : 'not yet synced'}</div></div>
+      <button class="btn ${i.synced?'ghost':''}" onclick="doSync('${esc(i.run_id)}')">
+        ${i.synced?'View payload':'Push draft'}</button></div>`).join('')
+    : '<div class="empty">Nothing reviewed yet. Accept something in the email team queue.</div>';
+}
+
+async function doSync(id){
+  const d = await api('/api/sync', {run_id:id});
+  $('syncdetail').style.display='';
+  $('payload').textContent = JSON.stringify(d.payload || d, null, 2);
+  loadSync();
+}
+
+/* ---------- metrics ---------- */
+async function loadMetrics(){
+  const m = await api('/api/metrics');
+  const fp = m.first_pass_acceptance;
+  $('kpi').innerHTML = `
+    <div><b>${m.runs_total||0}</b><span>Requests run</span></div>
+    <div><b>${m.queue_awaiting||0}</b><span>Awaiting QA</span></div>
+    <div><b>${fp==null?'&mdash;':Math.round(fp*100)+'%'}</b><span>First-pass acceptance</span></div>
+    <div><b>${m.avg_iterations||0}</b><span>Avg revision rounds</span></div>
+    <div><b>${m.synced||0}</b><span>Synced to Customer.io</span></div>
+    <div><b>${(m.by_selection_path&&m.by_selection_path.rule)||0}</b><span>Chosen by rules, not model</span></div>`;
+  $('rawmetrics').textContent = JSON.stringify(m, null, 2);
+}
+
+loadQueue();
+</script></body></html>

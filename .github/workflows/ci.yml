@@ -1,0 +1,22 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.9" }
+      - run: pip install jinja2 pyyaml
+
+      # The deterministic layer must be green before anything else runs.
+      - name: Unit tests
+        run: python -m unittest discover tests
+
+      # Any prompt or brand-rule change must not regress a family below
+      # its recorded baseline. This is the guard on the flat-file config:
+      # marketers can edit prompts and rules in a PR, and CI proves the
+      # change didn't quietly break something else.
+      - name: Eval suite (regression check)
+        run: python evals/run.py --check

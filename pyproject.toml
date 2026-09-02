@@ -1,0 +1,23 @@
+[project]
+name = "email-agent"
+version = "0.1.0"
+description = "Self-serve marketing email production, brief to brand-checked draft"
+requires-python = ">=3.9"
+
+# Runs with jinja2 + pyyaml alone. Everything else is opt-in:
+#   anthropic  -> live model calls (LLM_BACKEND=anthropic)
+#   slack-bolt -> Slack intake (Sprint 4)
+# The pipeline, evals and tests all run without them by design — the model
+# sits behind an adapter, so it can be swapped for a fixture.
+dependencies = ["jinja2>=3.1", "pyyaml>=6.0"]
+
+[project.optional-dependencies]
+live = ["anthropic>=0.40"]
+slack = ["slack-bolt>=1.18"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+email-agent = "src.cli:main"
+
+[tool.ruff]
+line-length = 100

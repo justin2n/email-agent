@@ -1,0 +1,8 @@
+<tr><td style="padding:20px 40px;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F5F5;border-radius:6px;"><tr>
+<td style="padding:20px 24px;">
+<h3 style="margin:0 0 10px 0;font-size:16px;line-height:22px;color:#1E1E1E;">{{ event_name }}</h3>
+<p style="margin:0;font-size:14px;line-height:24px;color:#767676;">
+{{ event_date }} &middot; {{ event_time }}{% if event_duration %} &middot; {{ event_duration }}{% endif %}
+{% if event_location %}<br />{{ event_location }}{% endif %}
+</p></td></tr></table></td></tr>

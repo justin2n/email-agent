@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Brief",
+  "description": "Marketing email brief. Generated from src/models/brief.py - do not hand-edit.",
+  "type": "object",
+  "properties": {
+    "campaign_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "product_launch",
+        "feature_announcement",
+        "webinar_invite",
+        "webinar_reminder",
+        "nurture_education",
+        "customer_story",
+        "event_followup",
+        "newsletter",
+        null
+      ]
+    },
+    "audience": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "designers",
+        "developers",
+        "design_leaders",
+        "educators",
+        "students",
+        "enterprise_it",
+        "all_users",
+        "trial_users",
+        "churned_users",
+        null
+      ]
+    },
+    "primary_message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cta_label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cta_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^https://"
+    },
+    "send_window": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "supporting_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "offer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_duration": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_location": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quote": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quote_attribution_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quote_attribution_role": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^https://"
+    },
+    "image_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^https://"
+    },
+    "image_alt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provided_copy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requester": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "raw_request": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "CONDITIONAL_REQUIRED": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "campaign_type",
+    "audience",
+    "primary_message",
+    "cta_label",
+    "cta_url",
+    "send_window"
+  ],
+  "x-conditional-required": {
+    "webinar_invite": [
+      "event_name",
+      "event_date",
+      "event_time"
+    ],
+    "webinar_reminder": [
+      "event_name",
+      "event_date",
+      "event_time"
+    ],
+    "customer_story": [
+      "quote",
+      "quote_attribution_name"
+    ],
+    "nurture_education": [
+      "resource_title",
+      "resource_url"
+    ],
+    "event_followup": [
+      "resource_title",
+      "resource_url"
+    ]
+  }
+}
