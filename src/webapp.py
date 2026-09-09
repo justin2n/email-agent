@@ -26,7 +26,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from .config import OUT as DATA_OUT, ensure_data_dirs
+from .config import OUT as DATA_OUT, PARTIALS, ensure_data_dirs, manifest
 from .escalate import Route
 from .integrations.customerio import sync_run
 from .llm.client import StubClient, get_client
@@ -98,6 +98,64 @@ HALLUCINATION_FIXTURE = {
 }
 
 
+# Representative content for rendering the library. Deliberately generic -
+# these are examples of the SHAPE, not brand-approved copy.
+SAMPLE_SLOTS = {
+    "headline": "Variables now support nested aliasing",
+    "subhead": "Token references stay live across every file in your project.",
+    "body": "Variables now support nested aliasing, so a token can point at another "
+            "token without a manual copy. Design systems stay in sync when the "
+            "source changes.",
+    "image_url": "https://placehold.co/600x260/A259FF/FFFFFF?text=Asset",
+    "image_alt": "Illustration of nested variable references",
+    "item_1_title": "Live references", "item_1_body": "Tokens update everywhere at once.",
+    "item_2_title": "Fewer copies", "item_2_body": "No more duplicating values by hand.",
+    "item_3_title": "Cross-file", "item_3_body": "Works across every file in a project.",
+    "label": "Explore variables", "url": "https://www.figma.com/variables",
+    "event_name": "Scaling Design Systems", "event_date": "18 November 2026",
+    "event_time": "11:00 AM PT", "event_duration": "45 minutes", "event_location": "Online",
+    "quote": "We cut our design review cycle roughly in half once tokens stopped "
+             "drifting between files.",
+    "attribution_name": "Sam Okafor", "attribution_role": "Design Systems Lead",
+    "resource_title": "The Design Systems Handbook",
+    "resource_body": "A practical guide to building and maintaining a system.",
+    "resource_url": "https://www.figma.com/resources/handbook",
+    "resource_label": "Read the handbook",
+}
+
+
+def _component_index() -> list[dict]:
+    """The library, with which campaign sequences use each block."""
+    data = manifest()
+    used_by: dict[str, list[str]] = {}
+    for campaign, sequence in data.get("sequences", {}).items():
+        for cid in sequence:
+            used_by.setdefault(cid, []).append(campaign)
+
+    out = []
+    for cid, spec in data["components"].items():
+        partial = PARTIALS / f"{cid}.html.j2"
+        out.append({
+            "id": cid,
+            "purpose": spec.get("purpose", ""),
+            "slots": spec.get("slots") or [],
+            "required": spec.get("required") or [],
+            "limits": spec.get("limits") or {},
+            "mandatory": bool(spec.get("mandatory")),
+            "used_by": used_by.get(cid, []),
+            "source": partial.read_text(encoding="utf-8") if partial.exists() else "",
+        })
+    return out
+
+
+def _render_component(cid: str) -> str:
+    """One block, rendered on its own, with sample copy in the slots."""
+    from .render.assemble import assemble
+
+    return assemble([cid], SAMPLE_SLOTS, "Component preview",
+                    "Rendered from the approved partial, with sample copy.").html
+
+
 # ----------------------------------------------------------------------
 # Queue: requests the marketer approved, waiting on the email team.
 # ----------------------------------------------------------------------
@@ -137,6 +195,26 @@ def _client(fixture=None):
 
 def _backend() -> str:
     return (os.environ.get("LLM_BACKEND") or "stub").lower()
+
+
+def _version() -> dict:
+    """
+    Enough to answer "am I looking at the build I just pushed?".
+
+    Railway exposes the deployed commit; locally we fall back to file mtimes.
+    """
+    from .config import config_fingerprint
+
+    ui = Path(__file__).parent / "ui.html"
+    return {
+        "commit": (os.environ.get("RAILWAY_GIT_COMMIT_SHA")
+                   or os.environ.get("RENDER_GIT_COMMIT") or "local")[:8],
+        "ui_bytes": ui.stat().st_size if ui.exists() else 0,
+        "has_template_library": "data-v=\"library\"" in ui.read_text(encoding="utf-8"),
+        "tabs": ["request", "queue", "sync", "library", "metrics"],
+        "backend": _backend(),
+        "config": config_fingerprint(),
+    }
 
 
 def _payload(state: ThreadState, blocks: dict) -> dict:
@@ -192,10 +270,22 @@ class Handler(BaseHTTPRequestHandler):
             page = page.replace("__EXAMPLES__", json.dumps(EXAMPLES))
             page = page.replace("__BACKEND__", json.dumps(_backend()))
             return self._send(200, page.encode(), "text/html; charset=utf-8")
+        if path == "/api/version":
+            return self._json(_version())
         if path == "/api/queue":
             return self._json({"items": _queue()})
         if path == "/api/metrics":
             return self._json(self._metrics())
+        if path == "/api/components":
+            return self._json({"components": _component_index(),
+                               "sequences": manifest().get("sequences", {})})
+        if path.startswith("/component/"):
+            cid = path.rsplit("/", 1)[-1]
+            try:
+                html = _render_component(cid)
+            except Exception as exc:
+                return self._send(404, str(exc).encode(), "text/plain")
+            return self._send(200, html.encode(), "text/html; charset=utf-8")
         if path.startswith("/preview/"):
             file = OUT / f"{path.rsplit('/', 1)[-1]}.html"
             if not file.exists():
@@ -351,6 +441,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        # Without this, browsers heuristically cache the page and API replies.
+        # After a deploy you then get the OLD UI back with no indication why -
+        # which looks exactly like the deploy having failed.
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
         self.end_headers()
         self.wfile.write(body)
 

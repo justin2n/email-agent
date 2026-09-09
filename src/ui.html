@@ -92,6 +92,23 @@
   pre{background:#1E1E1E;color:#E8E8E8;padding:15px;border-radius:8px;overflow:auto;
       font-size:11.5px;line-height:1.6;max-height:340px}
   .hint{color:var(--gray);font-size:13px;margin:6px 0 0}
+  .comp{display:grid;grid-template-columns:1fr 1.1fr;gap:20px;align-items:start}
+  @media(max-width:900px){.comp{grid-template-columns:1fr}}
+  .cid{font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700}
+  .slot{display:inline-block;background:var(--bg);border:1px solid var(--line);
+        border-radius:5px;padding:2px 8px;font-family:ui-monospace,Menlo,monospace;
+        font-size:11.5px;margin:0 5px 5px 0}
+  .slot.req{border-color:var(--purple);color:#7B3FD1}
+  .slot i{color:var(--mid);font-style:normal}
+  .seq{font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:7px 0;
+       border-bottom:1px solid var(--line)}
+  .seq:last-child{border:0}
+  .seq b{display:inline-block;min-width:190px;color:var(--ink)}
+  .seq span{color:var(--gray)}
+  .cframe{width:100%;height:230px;border:1px solid var(--line);border-radius:8px}
+  details{margin-top:10px}
+  details summary{cursor:pointer;font-size:12.5px;color:var(--gray)}
+  details pre{margin-top:8px;max-height:200px}
   .fq{margin-bottom:12px}
   .fq label{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;
             color:var(--ink);margin-bottom:6px}
@@ -110,6 +127,7 @@
     <button data-v="request" class="on">Request</button>
     <button data-v="queue">Email team<span class="n" id="qn">0</span></button>
     <button data-v="sync">Customer.io</button>
+    <button data-v="library">Template library</button>
     <button data-v="metrics">Metrics</button>
   </nav>
 </header>
@@ -175,6 +193,24 @@
     </div>
   </section>
 
+  <!-- ============ LIBRARY ============ -->
+  <section id="v-library" style="display:none">
+    <div class="card">
+      <label>Approved components</label>
+      <p class="hint">The closed vocabulary. The model selects from these by id and writes
+        copy into named slots &mdash; it never emits markup, so it cannot produce a broken
+        layout, an off-brand colour or a missing unsubscribe link.
+        These files are owned by the email team and changed in a pull request.</p>
+    </div>
+    <div class="card">
+      <label>Campaign type &rarr; fixed sequence</label>
+      <p class="hint">For these campaign types the layout is a lookup, not a decision.
+        No model is involved in choosing the blocks.</p>
+      <div id="seqs" style="margin-top:12px"></div>
+    </div>
+    <div id="lib"></div>
+  </section>
+
   <!-- ============ METRICS ============ -->
   <section id="v-metrics" style="display:none">
     <div class="kpi" id="kpi"></div>
@@ -199,9 +235,10 @@ EX.forEach(([n,b])=>{const el=document.createElement('button');el.textContent=n;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
-  ['request','queue','sync','metrics'].forEach(v=>$('v-'+v).style.display = v===b.dataset.v?'':'none');
+  ['request','queue','sync','library','metrics'].forEach(v=>$('v-'+v).style.display = v===b.dataset.v?'':'none');
   if(b.dataset.v==='queue') loadQueue();
   if(b.dataset.v==='sync') loadSync();
+  if(b.dataset.v==='library') loadLibrary();
   if(b.dataset.v==='metrics') loadMetrics();
 });
 
@@ -394,6 +431,37 @@ async function doSync(id){
   $('syncdetail').style.display='';
   $('payload').textContent = JSON.stringify(d.payload || d, null, 2);
   loadSync();
+}
+
+/* ---------- template library ---------- */
+async function loadLibrary(){
+  const d = await api('/api/components');
+  $('seqs').innerHTML = Object.entries(d.sequences).map(([k,v])=>
+    `<div class="seq"><b>${esc(k)}</b><span>${v.map(esc).join(' &rsaquo; ')}</span></div>`).join('');
+
+  $('lib').innerHTML = d.components.map(c=>{
+    const slots = c.slots.length ? c.slots.map(sl=>{
+      const req = c.required.includes(sl);
+      const lim = c.limits[sl] ? `<i> \u00b7 ${c.limits[sl]}</i>` : '';
+      return `<span class="slot ${req?'req':''}">${esc(sl)}${lim}</span>`;
+    }).join('') : '<span class="hint">No slots &mdash; fixed content.</span>';
+    const used = c.used_by.length
+      ? c.used_by.map(esc).join(', ')
+      : 'not in any fixed sequence (available to the model fallback)';
+    return `<div class="card"><div class="comp">
+      <div>
+        <div class="cid">${esc(c.id)}${c.mandatory?' <span class="tag rule">mandatory</span>':''}</div>
+        <p class="hint" style="margin-top:5px">${esc(c.purpose)}</p>
+        <h3>Slots <span style="text-transform:none;letter-spacing:0;font-weight:400">
+          (purple = required, number = character limit)</span></h3>
+        <div>${slots}</div>
+        <h3>Used by</h3><p class="hint">${esc(used)}</p>
+        <details><summary>View the partial &mdash; this is what the email team owns</summary>
+          <pre>${esc(c.source)}</pre></details>
+      </div>
+      <div><iframe class="cframe" src="/component/${esc(c.id)}"></iframe></div>
+    </div></div>`;
+  }).join('');
 }
 
 /* ---------- metrics ---------- */

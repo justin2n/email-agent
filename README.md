@@ -3,8 +3,9 @@
 Turns a marketing colleague's informal request into a brand-checked email draft,
 with a human approving at two points and nothing invented along the way.
 
-Proof-of-concept for the email production opportunity — see [`../evaluation.md`](../evaluation.md)
-for why this one was picked first, and [`../requirements.md`](../requirements.md) for the case.
+Proof-of-concept for the email production opportunity — see
+[`docs/evaluation.md`](docs/evaluation.md) for why this one was picked first,
+and [`docs/requirements.md`](docs/requirements.md) for the case.
 
 ---
 
@@ -28,10 +29,17 @@ four tabs:
 | **Request** | 4 | File a request, answer the gaps, preview, iterate, approve |
 | **Email team** | 3 | Review the queue, accept / edit / reject |
 | **Customer.io** | 5 | Push a draft, inspect the exact payload |
+| **Template library** | 1–2 | The approved components, rendered, with slots and limits |
 | **Metrics** | 6 | Throughput, first-pass acceptance, rule-vs-model ratio |
 
 It runs on Python's stdlib `http.server` — no Flask, no npm, no build step —
 because a demo that needs an install is a demo that doesn't happen.
+
+The **Template library** tab is where the architecture becomes visible: every
+approved block rendered on its own, its slots and character limits, which
+campaign sequences use it, and the raw partial the email team owns. It is the
+answer to "so what exactly is the AI allowed to touch" — copy in named slots,
+nothing else.
 
 **Suggested demo path:** *Vague ask* → watch it ask instead of guess → answer →
 give it three points → preview → request a change → approve → switch to
@@ -264,7 +272,7 @@ were already doing. Those diffs feed the eval suite.
   good enough to exercise real branching offline. Copy quality is only meaningful
   with `--backend anthropic`.
 - **The component library is invented.** Realistic, but not Figma's actual one.
-  Sprint 1 in `../tasks.md` exists to audit the real library, and if it covers
+  Sprint 1 in [`docs/tasks.md`](docs/tasks.md) exists to audit the real library, and if it covers
   under ~50% of past emails the roadmap changes.
 - **Grounding is lexical, not semantic.** It catches invented figures and names.
   It would not catch a plausible-sounding but wrong paraphrase of a real claim —
